@@ -1,4 +1,4 @@
-.PHONY: focal-rt-ros2 jammy-rt-ros2 clean
+.PHONY: focal-rt-ros2 jammy-rt-ros2 jammy-rt-stan2 clean
 
 # TODO: eventually the build.py should be a command line script that takes
 #       arguments
