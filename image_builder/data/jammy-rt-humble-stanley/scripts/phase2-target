@@ -1,6 +1,0 @@
-#!/bin/bash
-
-ls -l
-cat /config.txt
-cat config.txt
-sed -i 's/\<ubuntu:ubuntu\>/stan:stan/' user-data
