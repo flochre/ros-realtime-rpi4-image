@@ -10,6 +10,7 @@ jammy-rt-ros2:
 
 jammy-rt-stan2:
 	sudo ./ros-rt-img build jammy-rt jammy-rt-humble-stanley
+	sudo chown $(USER):$(USER) out/ out/*
 
 clean:
 	sudo ./ros-rt-img teardown
