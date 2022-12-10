@@ -2,8 +2,6 @@ Raspberry Pi image with ROS 2 and the real-time kernel
 =====================================================
 
 [![Build image](https://github.com/flochre/ros-realtime-rpi4-image/actions/workflows/build.yml/badge.svg)](https://github.com/flochre/ros-realtime-rpi4-image/actions/workflows/build.yml)
-<<<<<<< HEAD
-=======
 
 This repo builds a Raspberry Pi 4 image with ROS 2 and the real-time kernel
 pre-installed. This image can be downloaded directly from [the releases
@@ -76,7 +74,6 @@ image builder.
 
 Custom Image Builder for the Raspberry Pi for ROS 2 + PREEMPT_RT
 ===============================================================
->>>>>>> 8e696c5 (update readme and delete user-data now the image is starting)
 
 This repo builds a Raspberry Pi 4 image with ROS 2 and the real-time kernel
 pre-installed. This image can be downloaded directly from [the releases
