@@ -73,7 +73,6 @@ The rest of this README is meant for developers who want to know more about the
 image builder.
 
 Custom Image Builder for the Raspberry Pi for ROS 2 + PREEMPT_RT
-===============================================================
 
 This repo builds a Raspberry Pi 4 image with ROS 2 and the real-time kernel
 pre-installed. This image can be downloaded directly from [the releases

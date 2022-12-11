@@ -1,4 +1,4 @@
-.PHONY: focal-rt-ros2 jammy-rt-ros2 jammy-rt-stan2 clean
+.PHONY: focal-rt-ros2 jammy-rt-ros2 jammy-rt-stan2 jammy-rt-ruediger2 clean
 
 # TODO: eventually the build.py should be a command line script that takes
 #       arguments
@@ -10,6 +10,9 @@ jammy-rt-ros2:
 
 jammy-rt-stan2:
 	sudo ./ros-rt-img build jammy-rt jammy-rt-humble-stanley
+	sudo chown $(USER):$(USER) out/ out/*
+jammy-rt-ruediger2:
+	sudo ./ros-rt-img build jammy-rt jammy-rt-humble-ruediger
 	sudo chown $(USER):$(USER) out/ out/*
 
 clean:
