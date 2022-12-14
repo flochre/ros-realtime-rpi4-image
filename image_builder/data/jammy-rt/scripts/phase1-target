@@ -72,6 +72,11 @@ apt-get purge -y multipath-tools
 
 # TODO: If specified, create an image with isolcpus already setup.
 
+# reverse the network names to eth0 instead of enx<mac-address>
+# this is automatique after a apt-get update
+# https://askubuntu.com/a/1025201
+ln -s /dev/null /etc/udev/rules.d/80-net-setup-link.rules
+
 # clean up to reduce image size
 apt-get clean
 rm -rf /var/lib/apt/lists/*
