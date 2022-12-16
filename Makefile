@@ -5,15 +5,21 @@
 focal-rt-ros2:
 	sudo ./ros-rt-img build
 
+jammy-rt:
+	sudo ./ros-rt-img build jammy-rt
+
 jammy-rt-ros2:
 	sudo ./ros-rt-img build jammy-rt jammy-rt-humble
 
 jammy-rt-stan2:
 	sudo ./ros-rt-img build jammy-rt jammy-rt-humble-stanley
 	sudo chown $(USER):$(USER) out/ out/*
+
 jammy-rt-ruediger2:
-	sudo ./ros-rt-img build jammy-rt jammy-rt-humble-ruediger
-	sudo chown $(USER):$(USER) out/ out/*
+	sudo ./ros-rt-img build jammy-rt jammy-rt-humble jammy-rt-humble-ruediger
+
+jammy-rt-ruediger2-online:
+	sudo ./ros-rt-img build jammy-rt jammy-rt-humble jammy-rt-humble-ruediger-online
 
 clean:
 	sudo ./ros-rt-img teardown
