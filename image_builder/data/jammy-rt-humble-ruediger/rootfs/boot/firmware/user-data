@@ -1,27 +1,27 @@
 #cloud-config
 
-# On first boot, set the (default) ruediger user's password to "ruediger" and
+# On first boot, set the (default) druk user's password to "druk" and
 # expire user passwords
 chpasswd:
   expire: true
   list:
-  - ruediger:ruediger
+  - druk:druk
 
 ## Set the system's hostname. Please note that, unless you have a local DNS
 ## setup where the hostname is derived from DHCP requests (as with dnsmasq),
 ## setting the hostname here will not make the machine reachable by this name.
 ## You may also wish to install avahi-daemon (see the "packages:" key below)
 ## to make your machine reachable by the .local domain
-hostname: ruediger2
+hostname: TTTRC-Robotics
 
 # Enable password authentication with the SSH daemon
 ssh_pwauth: true
 
 users:
 - default
-- name: ruediger
-  plain_text_passwd: 'ruediger'
-  homedir: /home/ruediger
+- name: druk
+  plain_text_passwd: 'druk'
+  homedir: /home/druk
   shell: /bin/bash
   groups: [adm, audio, cdrom, dialout, dip, floppy, input, lxd, netdev, plugdev, realtime, sudo, video]
   sudo: ['ALL=(ALL) NOPASSWD:ALL']
@@ -29,6 +29,5 @@ users:
 
 ## Run arbitrary commands at rc.local like time
 runcmd:
--  [deluser, --remove-home, ubuntu]
+-  [deluser, --remove-home, druk]
 -  [/sbin/ldconfig]
--  [/bin/bash, /opt/ruediger2/scripts/wifi.sh]
