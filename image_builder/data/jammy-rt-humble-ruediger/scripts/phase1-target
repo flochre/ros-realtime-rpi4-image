@@ -30,6 +30,16 @@ cd /opt/ruediger2/ros2_ws
   --from-paths src \
   --ignore-src
 
+# install yd-lidar-SDK dependencies
+sudo apt install cmake pkg-config
+cd /tmp
+git clone https://github.com/YDLIDAR/YDLidar-SDK.git /tmp/YDLidar-SDK
+mkdir -p /tmp/YDLidar-SDK/build
+cd YDLidar-SDK/build
+cmake ..
+make
+make install
+
 # reverse the network names to eth0 instead of enx<mac-address>
 # this is automatique after a apt-get update
 # https://askubuntu.com/a/1025201
@@ -48,4 +58,4 @@ systemctl enable ruediger2.service
 # clean up to reduce image size
 apt-get autoremove -y && apt-get clean
 rm -rf /var/lib/apt/lists/*
-rm -rf /opt/ruediger2/ros2_ws
+rm -rf /opt/ruediger2
