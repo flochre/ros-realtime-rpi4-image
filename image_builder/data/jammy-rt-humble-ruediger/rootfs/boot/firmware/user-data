@@ -29,5 +29,5 @@ users:
 
 ## Run arbitrary commands at rc.local like time
 runcmd:
--  [deluser, --remove-home, druk]
+-  [deluser, --remove-home, ubuntu]
 -  [/sbin/ldconfig]
