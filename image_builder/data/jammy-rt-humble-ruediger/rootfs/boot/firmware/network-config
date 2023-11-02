@@ -31,13 +31,13 @@ ethernets:
     addresses:
       - 192.168.33.78/24
     optional: true
-#wifis:
-#  wlan0:
-#    dhcp4: true
-#    optional: true
-#    access-points:
-#      myhomewifi:
-#        password: "S3kr1t"
+wifis:
+  wlan0:
+    dhcp4: true
+    optional: true
+    access-points:
+      Fablab-W1F1:
+        password: "fablab2023"
 #      myworkwifi:
 #        password: "correct battery horse staple"
 #      workssid:
