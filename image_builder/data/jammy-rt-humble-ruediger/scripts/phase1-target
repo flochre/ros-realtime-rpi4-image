@@ -24,7 +24,7 @@ rosdep update \
 && colcon mixin update \
 && colcon metadata update
 
-cd /opt/ruediger2/ros2_ws
+cd /opt/druk/ros2_ws
 . /opt/ros/$ROS_DISTRO/setup.sh \
 && rosdep install -q -y \
   --from-paths src \
@@ -36,6 +36,15 @@ cd /tmp
 git clone https://github.com/YDLIDAR/YDLidar-SDK.git /tmp/YDLidar-SDK
 mkdir -p /tmp/YDLidar-SDK/build
 cd YDLidar-SDK/build
+cmake ..
+make
+make install
+
+# install serial_megapi
+cd /tmp
+git clone https://github.com/flochre/serial_megapi.git /tmp/serial_megapi
+mkdir -p /tmp/serial_megapi/build
+cd serial_megapi/build
 cmake ..
 make
 make install
@@ -52,14 +61,11 @@ echo 'SUBSYSTEM=="tty",ATTRS{idVendor}=="10c4",ATTRS{idProduct}=="ea60",SYMLINK+
 # Activate ip forward for ipv4
 sed -i "s/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g" /etc/sysctl.conf
 
-# link libserial
-ln -s /opt/ruediger2/ruediger2_control/serial_megapi/lib/serial_megapi/libserial_megapi.so /usr/local/lib/libserial_megapi.so
-
-# activate ruediger2 service
+# activate druk service
 systemctl daemon-reload
-systemctl enable ruediger2.service
+systemctl enable druk.service
 
 # clean up to reduce image size
 apt-get autoremove -y && apt-get clean
 rm -rf /var/lib/apt/lists/*
-rm -rf /opt/ruediger2
+rm -rf /opt/druk/ros2_ws

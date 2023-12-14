@@ -29,15 +29,15 @@ ethernets:
   eth0:
     dhcp4: true
     addresses:
-      - 192.168.33.78/24
+      - 192.168.75.37/24
     optional: true
-wifis:
-  wlan0:
-    dhcp4: true
-    optional: true
-    access-points:
-      Fablab-W1F1:
-        password: "fablab2023"
+# wifis:
+#   wlan0:
+#     dhcp4: true
+#     optional: true
+#     access-points:
+#       Fablab-W1F1:
+#         password: "fablab2023"
 #      myworkwifi:
 #        password: "correct battery horse staple"
 #      workssid:

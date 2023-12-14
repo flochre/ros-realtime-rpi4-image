@@ -31,3 +31,6 @@ users:
 runcmd:
 -  [deluser, --remove-home, ubuntu]
 -  [/sbin/ldconfig]
+-  [/bin/bash, /opt/druk/scripts/wifi.sh]
+-  [/usr/bin/ln, -s, /opt/druk/deployement, /home/druk/deployement]
+-  [/usr/bin/ln, -s, /opt/druk/scripts, /home/druk/scripts]
