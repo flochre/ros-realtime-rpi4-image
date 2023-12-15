@@ -1,0 +1,14 @@
+[Unit]
+Description=Service to start Druk
+After=syslog.target network.target
+[Service]
+LimitMEMLOCK=102400
+LimitMEMLOCKSoft=102400
+LimitRTPRIO=99
+LimitRTPRIOSoft=99
+ExecStart=/bin/bash /opt/druk/scripts/druk-localization-start
+Restart=on-failure
+RestartSec=10s
+User=druk
+[Install]
+WantedBy=multi-user.target
