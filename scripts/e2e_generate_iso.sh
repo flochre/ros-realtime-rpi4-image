@@ -47,6 +47,7 @@ cleanup(){
   if [[ "$1" -eq 0 ]]; then
     success PASS
   else
+    sudo ./ros-rt-img teardown
     error FAIL
   fi
 }
@@ -98,7 +99,8 @@ keep_sudo_active &
 pid_sudo=$!
 echo "PID Sudo => ${pid_sudo}"
 
-iso_default_name=ubuntu-22.04.3-v5.15.98-rt62-humble-arm64+raspi.img
+iso_default_name=ubuntu-22.04.3-rt-ros2-arm64+raspi.img
+# iso_default_name=ubuntu-22.04.3-v5.15.98-rt62-humble-arm64+raspi.img
 
 if [ ! -f $ROOT_DIR/cache/$iso_default_name.xz ]; then
   make jammy-rt-ros2
