@@ -1,7 +1,11 @@
 #!/bin/bash
 
 # generate a realtime group
+addgroup builder
 addgroup realtime
+
+# set timezone to Lyon
+timedatectl set-timezone Etc/GMT-1
 
 # update the apt database and install needed packages
 apt-get update \
@@ -34,7 +38,7 @@ rosdep update \
 && colcon mixin update \
 && colcon metadata update
 
-cd /opt/stanley2/ros2_ws
+cd /opt/pixx_ws
 . /opt/ros/$ROS_DISTRO/setup.sh \
 && rosdep install -q -y \
   --from-paths src \
@@ -75,18 +79,19 @@ ls -lA /usr/local/lib
 ln -fs libvmxpi_hal_cpp.so.1.3.1 /usr/local/lib/libvmxpi_hal_cpp.so.1
 ln -fs libvmxpi_hal_cpp.so.1 /usr/local/lib/libvmxpi_hal_cpp.so
 # link libgpio vmx versionspecial
-ln -fs libpigpio.so.vmx_79 /usr/local/lib/libpigpio.so.1
-ln -fs libpigpio.so.1 /usr/local/lib/libpigpio.so
+# ln -fs libpigpio.so.vmx_79 /usr/local/lib/libpigpio.so.1
+# ln -fs libpigpio.so.1 /usr/local/lib/libpigpio.so
 ls -lA /usr/local/lib
+
+chown -R :builder /opt/pixx_ws
 
 # activate stanley2 service
 # commented out as a requirement to humble version
 systemctl daemon-reload
 # systemctl enable stanley2.service
-systemctl enable stanley2_vmxpi.service
-systemctl enable flo_drive_joy.service
+# systemctl enable stanley2_vmxpi.service
+# systemctl enable flo_drive_joy.service
 
 # clean up to reduce image size
 apt-get autoremove -y && apt-get clean
 rm -rf /var/lib/apt/lists/*
-rm -rf /opt/stanley2/ros2_ws
