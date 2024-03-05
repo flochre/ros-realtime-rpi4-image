@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # generate a realtime group
-addgroup builder
 addgroup realtime
 
 # set timezone to Lyon
@@ -82,8 +81,6 @@ ln -fs libvmxpi_hal_cpp.so.1 /usr/local/lib/libvmxpi_hal_cpp.so
 # ln -fs libpigpio.so.vmx_79 /usr/local/lib/libpigpio.so.1
 # ln -fs libpigpio.so.1 /usr/local/lib/libpigpio.so
 ls -lA /usr/local/lib
-
-chown -R :builder /opt/pixx_ws
 
 # activate stanley2 service
 # commented out as a requirement to humble version

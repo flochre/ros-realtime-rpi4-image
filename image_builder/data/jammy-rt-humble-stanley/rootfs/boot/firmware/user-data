@@ -23,7 +23,7 @@ users:
   plain_text_passwd: 'pix'
   homedir: /home/pix
   shell: /bin/bash
-  groups: [adm, audio, builder, cdrom, dialout, dip, floppy, input, lxd, netdev, plugdev, realtime, sudo, video]
+  groups: [adm, audio, cdrom, dialout, dip, floppy, input, lxd, netdev, plugdev, realtime, sudo, video]
   sudo: ['ALL=(ALL) NOPASSWD:ALL']
 
 
@@ -32,3 +32,4 @@ runcmd:
 -  [deluser, --remove-home, ubuntu]
 -  [/sbin/ldconfig]
 -  [/bin/bash, /opt/pixx_ws/pixx_scripts/wifi.sh]
+-  [/usr/bin/chown, pix:pix, -R, /opt/pixx_ws]
