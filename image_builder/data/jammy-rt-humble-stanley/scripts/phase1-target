@@ -43,6 +43,13 @@ cd /opt/pixx_ws
   --from-paths src \
   --ignore-src
 
+# Install VSCode server
+mkdir -p /usr/local/bin/vscode-server
+cd /usr/local/bin/vscode-server
+wget -q https://update.code.visualstudio.com/latest/server-linux-arm64/stable -O - | tar -xz
+VSCODE_COMMIT=`./vscode-server-linux-arm64/bin/code-server --version | head -2 | tail -1`
+mv vscode-server-linux-arm64 ${VSCODE_COMMIT}
+
 # install yd-lidar-SDK dependencies
 sudo apt install cmake pkg-config
 cd /tmp

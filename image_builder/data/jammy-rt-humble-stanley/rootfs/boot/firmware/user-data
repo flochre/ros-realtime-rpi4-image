@@ -4,8 +4,10 @@
 # expire user passwords
 chpasswd:
   expire: true
-  list:
-  - pix:pix
+  users:
+    - name: pix
+      password: pix
+      type: text
 
 ## Set the system's hostname. Please note that, unless you have a local DNS
 ## setup where the hostname is derived from DHCP requests (as with dnsmasq),
@@ -13,6 +15,7 @@ chpasswd:
 ## You may also wish to install avahi-daemon (see the "packages:" key below)
 ## to make your machine reachable by the .local domain
 hostname: pixx
+create_hostname_file: true
 
 # Enable password authentication with the SSH daemon
 ssh_pwauth: true
@@ -31,5 +34,6 @@ users:
 runcmd:
 -  [deluser, --remove-home, ubuntu]
 -  [/sbin/ldconfig]
--  [/bin/bash, /opt/pixx_ws/pixx_scripts/wifi.sh]
 -  [/usr/bin/chown, pix:pix, -R, /opt/pixx_ws]
+-  [/bin/bash, /opt/pixx_ws/pixx_scripts/wifi.sh]
+-  [/bin/bash, /opt/pixx_ws/pixx_scripts/install_vscode_server.sh, pix]
