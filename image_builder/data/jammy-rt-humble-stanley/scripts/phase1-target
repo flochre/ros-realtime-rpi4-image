@@ -51,7 +51,8 @@ VSCODE_COMMIT=`./vscode-server-linux-arm64/bin/code-server --version | head -2 |
 mv vscode-server-linux-arm64 ${VSCODE_COMMIT}
 
 # install yd-lidar-SDK dependencies
-sudo apt install cmake pkg-config
+apt install -y \
+  cmake pkg-config
 cd /tmp
 git clone https://github.com/YDLIDAR/YDLidar-SDK.git /tmp/YDLidar-SDK
 mkdir -p /tmp/YDLidar-SDK/build
