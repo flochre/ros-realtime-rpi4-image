@@ -29,7 +29,7 @@ ethernets:
   eth0:
     dhcp4: true
     addresses:
-      - 192.168.33.78/24
+      - 192.168.33.74/24
     optional: true
 #wifis:
 #  wlan0:
