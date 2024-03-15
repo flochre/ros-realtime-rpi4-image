@@ -93,9 +93,8 @@ ls -lA /usr/local/lib
 # activate stanley2 service
 # commented out as a requirement to humble version
 systemctl daemon-reload
-# systemctl enable stanley2.service
-# systemctl enable stanley2_vmxpi.service
-# systemctl enable flo_drive_joy.service
+# systemctl enable pixx_control.service
+# systemctl enable pixx_lidar.service
 
 # clean up to reduce image size
 apt-get autoremove -y && apt-get clean

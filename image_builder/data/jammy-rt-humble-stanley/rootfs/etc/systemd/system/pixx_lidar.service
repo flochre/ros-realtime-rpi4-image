@@ -1,12 +1,12 @@
 [Unit]
-Description=Service to start Stanley2
+Description=Service to start lidar
 After=syslog.target network.target
 [Service]
 LimitMEMLOCK=102400
 LimitMEMLOCKSoft=102400
 LimitRTPRIO=99
 LimitRTPRIOSoft=99
-ExecStart=/bin/bash /opt/stanley2/scripts/stanley2-control-start
+ExecStart=/bin/bash /opt/pixx_ws/pixx_scripts/pixx-lidar-start
 Restart=on-failure
 RestartSec=10s
 User=root

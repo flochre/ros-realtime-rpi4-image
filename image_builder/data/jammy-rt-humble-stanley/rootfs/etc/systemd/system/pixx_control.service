@@ -1,12 +1,12 @@
 [Unit]
-Description=Service to start Vmxpi
+Description=Service to start Pixx Control
 After=syslog.target network.target
 [Service]
 LimitMEMLOCK=102400
 LimitMEMLOCKSoft=102400
 LimitRTPRIO=99
 LimitRTPRIOSoft=99
-ExecStart=/bin/bash /opt/stanley2/scripts/stanley2-vmxpi-start
+ExecStart=/bin/bash /opt/pixx_ws/pixx_scripts/pixx-control-start
 Restart=on-failure
 RestartSec=10s
 User=root
