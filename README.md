@@ -40,6 +40,14 @@ see there
 (ruediger2_control)[image_builder/image_builder/data/jammy-rt-rolling-ruediger/rootfs/opt/ruediger2/ruediger2_control]
 (ros2_ws/src)[image_builder/image_builder/data/jammy-rt-rolling-stanley/rootfs/opt/stanley2/ros2_ws/src]
 
+
+With the last changes we need to mount the workspace you want to use
+```
+# go to the right folder ../rootfs/opt/
+sudo mount -o bind $PIX_ROOT pixx_ws/
+```
+
+
 After this, you can generate the final image:
 
 ```
