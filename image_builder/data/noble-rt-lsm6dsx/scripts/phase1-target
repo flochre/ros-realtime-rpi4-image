@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -e -o pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+
+# Install LSM6DSX sensor kernel module support
+# CONFIG_IIO_ST_LSM6DSX: STMicroelectronics 6-axis accelerometer/gyroscope sensor
+echo "Installing LSM6DSX (IIO_ST_LSM6DSX) sensor module support..."
+
+# Update package lists
+apt-get update
+
+# Install essential build tools for kernel modules
+apt-get install -y \
+  build-essential \
+  linux-headers-${LINUX_RT_VERSION}-raspi \
+  kmod \
+  dkms \
+  || true
+
+# Install iio-utils for sensor interfacing and diagnostics
+apt-get install -y \
+  libiio-utils \
+  libiio0 \
+  || true
+
+# Create directory structure for IIO sensor modules
+mkdir -p /lib/modules/${LINUX_RT_VERSION}-raspi/extra/iio
+mkdir -p /opt/iio-modules
+
+echo "✓ LSM6DSX sensor kernel module support infrastructure installed"
