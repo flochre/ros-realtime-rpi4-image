@@ -44,7 +44,7 @@ see there
 With the last changes we need to mount the workspace you want to use
 ```
 # go to the right folder ../rootfs/opt/
-sudo mount -o bind $PIX_ROOT pixx_ws/
+sudo mount -o bind $PIXX_ROOT pixx_ws/
 ```
 
 

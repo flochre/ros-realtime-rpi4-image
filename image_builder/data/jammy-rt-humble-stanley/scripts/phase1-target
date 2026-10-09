@@ -4,7 +4,8 @@
 addgroup realtime
 
 # set timezone to Lyon
-timedatectl set-timezone Etc/GMT-1
+# timedatectl list-timezones | grep -i paris
+timedatectl set-timezone Europe/Paris
 
 # update the apt database and install needed packages
 apt-get update \
@@ -32,6 +33,14 @@ apt-get install -y \
   libzbar-dev \
   libgflags-dev nlohmann-json3-dev libgoogle-glog-dev \
   ros-$ROS_DISTRO-image-transport ros-$ROS_DISTRO-image-publisher ros-$ROS_DISTRO-camera-info-manager
+
+apt-get install -y \
+  /opt/pixx_ws/deb_files/ros-$ROS_DISTRO-rf2o-laser-odometry_0.1.0-0jammy_arm64.deb \
+  /opt/pixx_ws/deb_files/ros-$ROS_DISTRO-ydlidar-ros2-driver_1.1.1-0jammy_arm64.deb
+
+rm -rf /opt/pixx_ws/deb_files
+
+python3 -m pip install -r /opt/pixx_ws/src/ultralytics_ros/requirements.txt
 
 rosdep update \
 && colcon mixin update \

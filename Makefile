@@ -15,6 +15,10 @@ jammy-rt-stanley2:
 	sudo ./ros-rt-img build jammy-rt-humble-stanley
 	sudo chown -R $$(id -u):$$(id -g) out cache
 
+manual-ws:
+	sudo ./ros-rt-img build manual-ws
+	sudo chown -R $$(id -u):$$(id -g) out cache
+
 clean:
 	sudo ./ros-rt-img teardown
 	sudo rm -rf out cache
