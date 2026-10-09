@@ -1,0 +1,13 @@
+# Ubuntu Core POC build targets (append to main Makefile)
+
+.PHONY: noble-rt-core noble-rt-core-android
+
+noble-rt-core:
+	sudo ./ros-rt-img build noble-rt-core
+
+noble-rt-core-android:
+	sudo ./ros-rt-img build noble-rt-core noble-rt-core-android
+
+clean-core:
+	sudo ./ros-rt-img teardown
+	sudo rm -rf out/ubuntu-24.04-core*.img* cache

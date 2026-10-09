@@ -1,0 +1,10 @@
+#!/bin/bash
+
+loop_device=$1
+
+set -xe
+
+# Ubuntu Core uses a single partition (no separate boot partition)
+# Only resize the main partition
+e2fsck -y -f "${loop_device}"p1
+resize2fs "${loop_device}"p1

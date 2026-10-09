@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -xe
+
+# This script extracts the Ubuntu Core image (compressed with xz).
+# The script is called with only one argument: the path to the file downloaded.
+# The script should output the decompressed output into stdout, so it can be
+# redirected into a file by the build system.
+
+exec xzcat --decompress "$1"
