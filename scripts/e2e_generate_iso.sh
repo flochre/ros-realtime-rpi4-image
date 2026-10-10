@@ -11,11 +11,13 @@ readonly NORM='\033[0m'
 
 readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 readonly ROOT_DIR=$SCRIPT_DIR/..
+cd "$ROOT_DIR"
 
 # Defaults
 result=1    # Default to failure
 # unless a system variable is set 
 ROBOT_BUILDER="cfr"
+REBUILD_BASE=0
 
 # Loggers
 log(){
@@ -62,11 +64,13 @@ keep_sudo_active(){
   done
 }
 
-usage="$(basename "$0") [-h|--help] [-b |--builder string] -- Generate Iso file pishrimp it and compress it
+usage="$(basename "$0") [-h|--help] [-b |--builder string] [--rebuild-base] -- Generate Iso file pishrimp it and compress it
 
 where:
   -h |--help        show this help text
-  -b |--builder     set the rosdistro to use (default: "$ROBOT_BUILDER") - other possibilyties ruediger2"
+  -b |--builder     set the rosdistro to use (default: "$ROBOT_BUILDER") - other possibilyties ruediger2
+  --rebuild-base    rebuild the intermediate lsm6dsx image locally instead of
+                    downloading it from the GitHub release"
 
 # Argparser
 while [[ $# -gt 0 ]]
@@ -82,6 +86,10 @@ do
     -b|--builder)
     ROBOT_BUILDER="$2"
     shift 2
+    ;;
+    --rebuild-base)
+    REBUILD_BASE=1
+    shift 1
     ;;
     *)
     panic "Unrecognized option $1"
@@ -104,10 +112,11 @@ echo "PID Sudo => ${pid_sudo}"
 # iso_default_name=ubuntu-22.04.4-v5.15.98-rt62-humble-arm64+raspi.img
 iso_default_name=ubuntu-24.04.5-rt-lsm6dsx-arm64+raspi.img
 
-if [ ! -f $ROOT_DIR/cache/$iso_default_name.xz ]; then
+if [ "$REBUILD_BASE" -eq 1 ]; then
   make noble-rt
   sudo pishrink.sh $ROOT_DIR/out/$iso_default_name
-  xz --extreme --threads=0 -9 $ROOT_DIR/out/$iso_default_name
+  # Intermediate image is only consumed by the builder, so favor speed over size
+  xz --threads=0 -3 $ROOT_DIR/out/$iso_default_name
   mv $ROOT_DIR/out/$iso_default_name.xz $ROOT_DIR/cache/
 fi
 
