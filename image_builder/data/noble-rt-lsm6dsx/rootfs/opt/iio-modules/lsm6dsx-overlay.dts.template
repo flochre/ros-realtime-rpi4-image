@@ -1,0 +1,31 @@
+// Device Tree overlay template for the LSM6DSX IMU family on I2C.
+//
+// Placeholders (substituted at build time by phase1-target, see config.ini
+// for the env vars that control them):
+//   @LSM6DSX_COMPATIBLE@  - driver "compatible" string, e.g. "st,lsm6dsl"
+//   @LSM6DSX_I2C_ADDR@    - I2C address without "0x" prefix, e.g. 6a
+//
+// Declaring the sensor in the device tree lets the kernel match it against
+// the st_lsm6dsx driver's modalias table and auto-load/probe it when the
+// bus is scanned at boot - no modprobe script or systemd unit required.
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2711";
+
+	fragment@0 {
+		target = <&i2c_arm>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+
+			lsm6dsx@@LSM6DSX_I2C_ADDR@ {
+				compatible = "@LSM6DSX_COMPATIBLE@";
+				reg = <0x@LSM6DSX_I2C_ADDR@>;
+				status = "okay";
+			};
+		};
+	};
+};

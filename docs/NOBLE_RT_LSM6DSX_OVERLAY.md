@@ -5,7 +5,9 @@
 This overlay profile extends the standard `noble-rt` (Ubuntu 24.04 Server + PREEMPT_RT) with:
 - **LSM6DSX sensor driver** (CONFIG_IIO_ST_LSM6DSX) for 6-axis accelerometer/gyroscope
 - **IIO (Industrial I/O) utilities** for sensor access and diagnostics
-- **Systemd service** for automatic module loading
+- **Device Tree overlay** describing the sensor on the I2C bus, so the kernel
+  auto-probes/loads the driver at boot via the standard modalias mechanism -
+  no custom modprobe script or systemd unit required
 - **Ready for kernel customization** with sensor module compilation
 
 ## Quick Start
@@ -52,6 +54,11 @@ CS/SA0    →  GND       →  (sets I2C address 0x6A)
 - CS/SA0 connected to GND: `0x6A`
 - CS/SA0 connected to VCC: `0x6B`
 
+Set `LSM6DSX_I2C_ADDR` (without the `0x` prefix) and `LSM6DSX_COMPATIBLE` (the
+exact chip variant, e.g. `st,lsm6dsl`, `st,lsm6dso`, `st,lsm6dsox`, ...) in
+`image_builder/data/noble-rt-lsm6dsx/config.ini` to match your wiring/part
+before building. These are baked into the Device Tree overlay at build time.
+
 **Verify Connection:**
 ```bash
 sudo apt install i2c-tools
@@ -80,15 +87,13 @@ ssh ubuntu@<ip-address>
 uname -a
 # Should show PREEMPT_RT version
 
-# Check sensor module infrastructure
-ls -la /opt/iio-modules/
-ls -la /lib/modules/*/extra/iio/
+# Check the Device Tree overlay was installed and is loaded
+cat /boot/firmware/config.txt | grep lsm6dsx
+ls -la /boot/firmware/overlays/lsm6dsx.dtbo
+ls /proc/device-tree/soc/i2c@*/lsm6dsx@*
 
-# Check systemd service
-sudo systemctl status lsm6dsx-module-load
-
-# View module loading logs
-sudo journalctl -u lsm6dsx-module-load -n 20
+# Check kernel logs for driver probe
+dmesg | grep -i lsm6dsx
 ```
 
 ### 3. Sensor Access (when hardware present)
