@@ -91,7 +91,20 @@ def build(args):
     pause_after=args.pause_after
   )
 
-  builder.build()
+  try:
+    builder.build()
+  finally:
+    _restore_ownership(args.out_dir, args.cache_dir)
+
+
+def _restore_ownership(*paths):
+  # Running under sudo leaves root-owned files; hand them back to the real user.
+  uid, gid = os.environ.get("SUDO_UID"), os.environ.get("SUDO_GID")
+  if uid is None or gid is None:
+    return
+  for path in paths:
+    if path and os.path.exists(path):
+      subprocess.run(["chown", "-R", f"{uid}:{gid}", path], check=False)
 
 
 def teardown(args):
