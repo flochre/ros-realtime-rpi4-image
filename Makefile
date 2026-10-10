@@ -11,6 +11,12 @@ focal-rt-ros2:
 noble-rt-ros2:
 	sudo ./ros-rt-img build noble-rt noble-rt-jazzy
 
+noble-rt:
+	sudo ./ros-rt-img build noble-rt noble-rt-lsm6dsx
+
+noble-rt-cfr:
+	sudo ./ros-rt-img build noble-rt-cfr
+
 clean:
 	sudo ./ros-rt-img teardown
-	sudo rm -rf out cache
+# 	sudo rm -rf out cache
