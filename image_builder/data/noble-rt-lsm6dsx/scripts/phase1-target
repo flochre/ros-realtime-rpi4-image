@@ -19,6 +19,11 @@ apt-get install -y \
   dkms \
   || true
 
+# device-tree-compiler (dtc) is needed to build the lsm6dsx overlay below.
+apt-get install -y \
+  device-tree-compiler \
+  || true
+
 # Install iio-utils for sensor interfacing and diagnostics
 apt-get install -y \
   libiio-utils \
@@ -27,6 +32,26 @@ apt-get install -y \
 
 # Create directory structure for IIO sensor modules
 mkdir -p /lib/modules/${LINUX_RT_VERSION}-raspi/extra/iio
-mkdir -p /opt/iio-modules
 
-echo "✓ LSM6DSX sensor kernel module support infrastructure installed"
+# Generate and compile a Device Tree overlay that declares the LSM6DSX sensor
+# on the I2C bus. This lets the kernel auto-probe/load the st_lsm6dsx driver
+# via its modalias when the bus is scanned at boot, instead of relying on a
+# custom modprobe script/systemd unit.
+LSM6DSX_COMPATIBLE=${LSM6DSX_COMPATIBLE:-st,lsm6dsl}
+LSM6DSX_I2C_ADDR=${LSM6DSX_I2C_ADDR:-6a}
+
+sed \
+  -e "s/@LSM6DSX_COMPATIBLE@/${LSM6DSX_COMPATIBLE}/g" \
+  -e "s/@LSM6DSX_I2C_ADDR@/${LSM6DSX_I2C_ADDR}/g" \
+  /opt/iio-modules/lsm6dsx-overlay.dts.template > /opt/iio-modules/lsm6dsx-overlay.dts
+
+dtc -@ -I dts -O dtb -o /boot/firmware/overlays/lsm6dsx.dtbo /opt/iio-modules/lsm6dsx-overlay.dts
+
+# Enable the I2C interface and load the overlay at boot (idempotent).
+CONFIG_TXT=/boot/firmware/config.txt
+grep -qxF "dtparam=i2c_arm=on" $CONFIG_TXT || echo "dtparam=i2c_arm=on" >> $CONFIG_TXT
+grep -qxF "dtoverlay=lsm6dsx" $CONFIG_TXT || echo "dtoverlay=lsm6dsx" >> $CONFIG_TXT
+
+rm -rf /opt/iio-modules
+
+echo "✓ LSM6DSX sensor kernel module support installed (compatible=${LSM6DSX_COMPATIBLE}, addr=0x${LSM6DSX_I2C_ADDR})"
