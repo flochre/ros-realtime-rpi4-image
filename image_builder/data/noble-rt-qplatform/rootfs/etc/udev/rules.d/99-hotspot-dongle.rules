@@ -1,0 +1,3 @@
+# Automatically trigger hotspot-dongle.service when the USB Wi-Fi dongle is detected
+ACTION=="add", SUBSYSTEM=="net", KERNEL=="wlxd03745232fcd", TAG+="systemd", ENV{SYSTEMD_WANTS}="hotspot-dongle.service"
+ACTION=="add", SUBSYSTEM=="net", ATTRS{idVendor}=="2357", ATTRS{idProduct}=="012d", TAG+="systemd", ENV{SYSTEMD_WANTS}="hotspot-dongle.service"

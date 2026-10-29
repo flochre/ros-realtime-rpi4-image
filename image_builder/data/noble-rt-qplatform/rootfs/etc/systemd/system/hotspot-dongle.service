@@ -1,0 +1,18 @@
+[Unit]
+Description=Wi-Fi Access Point on USB Dongle
+BindsTo=sys-subsystem-net-devices-wlxd03745232fcd.device
+After=sys-subsystem-net-devices-wlxd03745232fcd.device
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=/run/hostapd-dongle.pid
+ExecStartPre=/sbin/ip link set wlxd03745232fcd up
+ExecStart=/usr/sbin/hostapd -B -P /run/hostapd-dongle.pid /etc/hostapd/hostapd-dongle.conf
+ExecStopPost=/sbin/ip link set wlxd03745232fcd down
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=sys-subsystem-net-devices-wlxd03745232fcd.device
+WantedBy=multi-user.target

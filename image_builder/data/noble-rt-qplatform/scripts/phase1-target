@@ -1,0 +1,88 @@
+#!/bin/bash
+
+set -e -o pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+
+# Install LSM6DSX sensor kernel module support
+# CONFIG_IIO_ST_LSM6DSX: STMicroelectronics 6-axis accelerometer/gyroscope sensor
+echo "Installing LSM6DSX (IIO_ST_LSM6DSX) sensor module support..."
+
+# Update package lists
+apt-get update
+
+# Install essential build tools for kernel modules
+apt-get install -y \
+  build-essential \
+  linux-headers-${LINUX_RT_VERSION}-raspi \
+  kmod \
+  dkms \
+  || true
+
+# Install iio-utils for sensor interfacing and diagnostics
+apt-get install -y \
+  libiio-utils \
+  libiio0 \
+  || true
+
+# Install Wayland kiosk compositor (cage + seatd) and lightweight WebKit2GTK runtime
+echo "Installing Wayland kiosk display stack (cage + WebKit2GTK)..."
+apt-get install -y --no-install-recommends \
+  cage \
+  seatd \
+  python3-gi \
+  gir1.2-gtk-3.0 \
+  gir1.2-webkit2-4.1 \
+  libegl-mesa0 \
+  libgl1-mesa-dri \
+  libgbm1 \
+  libinput-bin \
+  fonts-dejavu-core \
+  || true
+
+# Create directory structure for IIO sensor modules
+mkdir -p /lib/modules/${LINUX_RT_VERSION}-raspi/extra/iio
+mkdir -p /opt/iio-modules
+
+# Create 'iio' and 'seat' groups and add default user to hardware/display groups
+groupadd -f iio
+groupadd -f seat
+if id "ubuntu" &>/dev/null; then
+  usermod -aG iio,video,render,input,tty,seat ubuntu || true
+fi
+
+# Ensure kiosk scripts are executable, netplan config is 0600, and SSH authorized_keys has strict permissions
+chmod +x /opt/qplatform/scripts/start_kiosk.sh /opt/qplatform/scripts/kiosk_browser.py 2>/dev/null || true
+chmod 0600 /etc/netplan/60-eth0-shared.yaml 2>/dev/null || true
+if [ -d /home/ubuntu/.ssh ]; then
+  chmod 0700 /home/ubuntu/.ssh
+  chmod 0600 /home/ubuntu/.ssh/authorized_keys 2>/dev/null || true
+  chown -R 1000:1000 /home/ubuntu 2>/dev/null || true
+fi
+systemctl enable seatd.service || true
+systemctl enable qplatform-kiosk.service || true
+
+# Refresh module dependency index to pick up any patched modules in /lib/modules/.../updates/
+for kdir in /lib/modules/*-raspi; do
+  if [ -d "$kdir" ]; then
+    depmod -a "$(basename "$kdir")" || true
+  fi
+done
+
+# Enable I2C, SPI, LSM6DSX overlay, and KMS DRM display in /boot/firmware/config.txt
+if [ -f /boot/firmware/config.txt ]; then
+  echo "Configuring /boot/firmware/config.txt for LSM6DSX on SPI0 and KMS DRM display..."
+  grep -q "^dtparam=i2c_arm=on" /boot/firmware/config.txt || echo "dtparam=i2c_arm=on" >> /boot/firmware/config.txt
+  grep -q "^dtparam=spi=on" /boot/firmware/config.txt || echo "dtparam=spi=on" >> /boot/firmware/config.txt
+  grep -q "^dtoverlay=lsm6dsx-spi" /boot/firmware/config.txt || echo "dtoverlay=lsm6dsx-spi" >> /boot/firmware/config.txt
+  grep -q "^dtoverlay=vc4-kms-v3d" /boot/firmware/config.txt || echo "dtoverlay=vc4-kms-v3d" >> /boot/firmware/config.txt
+fi
+
+# Build micro-ROS agent and enable service if ROS Jazzy is installed
+if [ -d "/opt/ros/jazzy" ] && [ -f "/opt/qplatform/scripts/build_micro_ros_agent.sh" ]; then
+  echo "Building and setting up micro-ROS Agent..."
+  bash /opt/qplatform/scripts/build_micro_ros_agent.sh || true
+fi
+
+echo "✓ QPlatform sensor, control, micro-ROS, and Wayland kiosk infrastructure installed"
+

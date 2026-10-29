@@ -1,0 +1,14 @@
+.PHONY: noble-rt-qplatform dtbo
+
+DTC ?= $(shell which dtc 2>/dev/null || echo ./bin/dtc)
+DTBO_DIR = image_builder/data/noble-rt-qplatform/rootfs/boot/firmware/overlays
+DTS_DIR = image_builder/data/noble-rt-qplatform/dts
+
+dtbo: $(DTBO_DIR)/lsm6dsx-spi.dtbo
+
+$(DTBO_DIR)/lsm6dsx-spi.dtbo: $(DTS_DIR)/lsm6dsx-spi.dts
+	mkdir -p $(DTBO_DIR)
+	$(DTC) -@ -Wno-unit_address_vs_reg -I dts -O dtb -o $@ $<
+ 
+noble-rt-qplatform: dtbo
+	sudo ./ros-rt-img build noble-rt noble-rt-qplatform

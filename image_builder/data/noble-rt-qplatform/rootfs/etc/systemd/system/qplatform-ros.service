@@ -1,0 +1,19 @@
+[Unit]
+Description=QPlatform ROS 2 Bringup (ros2_control + IIO IMU + EKF + Nav2)
+After=network-online.target micro-ros-agent.service
+Wants=network-online.target micro-ros-agent.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+SupplementaryGroups=iio
+Environment="ROS_DOMAIN_ID=0"
+Environment="RMW_IMPLEMENTATION=rmw_fastrtps_cpp"
+ExecStartPre=+/opt/qplatform/scripts/setup_iio_trigger.sh 100
+ExecStart=/bin/bash -c "source /opt/ros/jazzy/setup.bash && exec ros2 launch /opt/qplatform/launch/omni_bringup.launch.py"
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

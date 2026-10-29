@@ -1,0 +1,17 @@
+[Unit]
+Description=micro-ROS Agent (UDPv4 Server on Port 8888)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+Environment="ROS_DOMAIN_ID=0"
+Environment="RMW_IMPLEMENTATION=rmw_fastrtps_cpp"
+ExecStart=/bin/bash -c "source /opt/ros/jazzy/setup.bash && if [ -f /opt/micro_ros_ws/install/setup.bash ]; then source /opt/micro_ros_ws/install/setup.bash; fi && exec ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888"
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

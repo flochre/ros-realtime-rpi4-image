@@ -405,6 +405,7 @@ class Builder(object):
     script_path_in_target = os.path.join(self.chroot_path, "setup", script_filename)
     self.logger.debug(f"copying {script_path} to {script_path_in_target}")
     shutil.copy(script_path, script_path_in_target)
+    os.chmod(script_path_in_target, 0o755)
 
     try:
       cmd = ["systemd-nspawn", "-D", self.chroot_path]

@@ -1,0 +1,37 @@
+From: QPlatform <albin@qplatform.local>
+Subject: [PATCH] iio: imu: st_lsm6dsx: fix NULL pointer dereference in shub sysfs attributes
+
+In st_lsm6dsx_shub_sampling_freq_avail() and st_lsm6dsx_shub_scale_avail(),
+`dev` is the embedded struct device of struct iio_dev, which does not have
+driver_data set. Calling dev_get_drvdata(dev) returns NULL and causes a
+crash when passed to iio_priv().
+
+Use dev_to_iio_dev(dev) instead, matching st_lsm6dsx_core.c.
+---
+ drivers/iio/imu/st_lsm6dsx/st_lsm6dsx_shub.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/iio/imu/st_lsm6dsx/st_lsm6dsx_shub.c b/drivers/iio/imu/st_lsm6dsx/st_lsm6dsx_shub.c
+index c1b444520d2a..d1128dd1a884 100644
+--- a/drivers/iio/imu/st_lsm6dsx/st_lsm6dsx_shub.c
++++ b/drivers/iio/imu/st_lsm6dsx/st_lsm6dsx_shub.c
+@@ -668,7 +668,7 @@ st_lsm6dsx_shub_sampling_freq_avail(struct device *dev,
+ 				    struct device_attribute *attr,
+ 				    char *buf)
+ {
+-	struct st_lsm6dsx_sensor *sensor = iio_priv(dev_get_drvdata(dev));
++	struct st_lsm6dsx_sensor *sensor = iio_priv(dev_to_iio_dev(dev));
+ 	const struct st_lsm6dsx_ext_dev_settings *settings;
+ 	int i, len = 0;
+ 
+@@ -688,7 +688,7 @@ static ssize_t st_lsm6dsx_shub_scale_avail(struct device *dev,
+ 					   struct device_attribute *attr,
+ 					   char *buf)
+ {
+-	struct st_lsm6dsx_sensor *sensor = iio_priv(dev_get_drvdata(dev));
++	struct st_lsm6dsx_sensor *sensor = iio_priv(dev_to_iio_dev(dev));
+ 	const struct st_lsm6dsx_ext_dev_settings *settings;
+ 	int i, len = 0;
+ 
+-- 
+2.43.0

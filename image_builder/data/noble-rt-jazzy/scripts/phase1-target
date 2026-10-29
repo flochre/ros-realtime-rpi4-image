@@ -12,7 +12,23 @@ rm /tmp/ros2-apt-source.deb
 sed -i 's/^Suites: noble$/Suites: noble noble-updates noble-backports/' /etc/apt/sources.list.d/ubuntu.sources
 
 apt-get update
-apt-get install -y ros-$ROS_DISTRO-ros-base
+apt-get install -y \
+  ros-$ROS_DISTRO-ros-base \
+  ros-$ROS_DISTRO-navigation2 \
+  ros-$ROS_DISTRO-nav2-bringup \
+  ros-$ROS_DISTRO-robot-localization \
+  ros-$ROS_DISTRO-ros2-control \
+  ros-$ROS_DISTRO-ros2-controllers \
+  ros-$ROS_DISTRO-ros2controlcli \
+  ros-$ROS_DISTRO-omni-wheel-drive-controller \
+  ros-$ROS_DISTRO-controller-manager \
+  ros-$ROS_DISTRO-joint-state-broadcaster \
+  ros-$ROS_DISTRO-imu-sensor-broadcaster \
+  ros-$ROS_DISTRO-micro-ros-msgs \
+  python3-colcon-common-extensions \
+  git \
+  cmake \
+  build-essential
 
 # Install some misc packages
 apt-get install -y cpufrequtils libraspberrypi-bin rt-tests cpuset stress stress-ng

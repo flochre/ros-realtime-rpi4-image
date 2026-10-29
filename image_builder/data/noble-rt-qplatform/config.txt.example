@@ -1,0 +1,74 @@
+# ==============================================================================
+# Raspberry Pi /boot/firmware/config.txt - QPlatform noble-rt LSM6DSx SPI Config
+# ==============================================================================
+# This file is located at /boot/firmware/config.txt on the FAT32 boot partition.
+# The image builder automatically enables SPI and the LSM6DSx overlay during build.
+#
+# Hardware Wiring for SPI0 (GPIO 7–11):
+#   - GPIO 11 (Pin 23): SCLK
+#   - GPIO 10 (Pin 19): MOSI
+#   - GPIO 9  (Pin 21): MISO
+#   - GPIO 8  (Pin 24): CE0 (Default Chip Select)
+#   - GPIO 7  (Pin 26): CE1 (Alternate Chip Select)
+#   - 3.3V    (Pin 1) : VCC
+#   - GND     (Pin 6) : GND
+# ==============================================================================
+
+[all]
+arm_64bit=1
+kernel=vmlinuz
+cmdline=cmdline.txt
+initramfs initrd.img followkernel
+
+# Enable basic onboard hardware
+dtparam=audio=on
+dtparam=i2c_arm=on
+
+# ------------------------------------------------------------------------------
+# SPI0 & LSM6DSx IMU Configuration
+# ------------------------------------------------------------------------------
+# 1. Enable SPI controller
+dtparam=spi=on
+
+# 2. Load LSM6DSx Device Tree Overlay (default: CE0 / GPIO 8, 10MHz, st,lsm6ds3)
+dtoverlay=lsm6dsx-spi
+
+# --- Alternative Overlay Options ---
+# To select a specific sensor variant:
+#   dtoverlay=lsm6dsx-spi,lsm6dso
+#   dtoverlay=lsm6dsx-spi,lsm6dsox
+#   dtoverlay=lsm6dsx-spi,lsm6dsr
+#   dtoverlay=lsm6dsx-spi,ism330dhcx
+#
+# To select Chip Select 1 (GPIO 7 / CE1) instead of CE0:
+#   dtoverlay=lsm6dsx-spi,cs1
+#   dtoverlay=lsm6dsx-spi,lsm6dso,cs1
+#
+# To adjust SPI bus clock frequency (e.g. 8 MHz):
+#   dtoverlay=lsm6dsx-spi,speed=8000000
+#
+# To connect an optional hardware interrupt / Data Ready pin (e.g. GPIO 25 / Pin 22):
+#   dtoverlay=lsm6dsx-spi,interrupt=25
+# ------------------------------------------------------------------------------
+
+# Video & Display
+disable_overscan=1
+dtoverlay=vc4-kms-v3d
+disable_fw_kms_setup=1
+
+# Serial console
+enable_uart=1
+
+# Peripheral auto-detect
+camera_auto_detect=1
+display_auto_detect=1
+dtoverlay=dwc2
+
+[pi4]
+max_framebuffers=2
+arm_boost=1
+
+[cm4]
+dtoverlay=dwc2,dr_mode=host
+
+[all]

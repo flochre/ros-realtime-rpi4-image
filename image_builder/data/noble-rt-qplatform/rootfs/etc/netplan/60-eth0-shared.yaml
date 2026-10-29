@@ -1,0 +1,31 @@
+# ==============================================================================
+# Netplan Configuration: Bridged eth0 + Wi-Fi Hotspot (10.42.0.1/24)
+# ==============================================================================
+# Creates br0 containing eth0, with static IP 10.42.0.1/24.
+# Paired with /etc/systemd/network/10-netplan-br0.network.d/shared-dhcp.conf
+# to provide DHCP to both Ethernet motors and Wi-Fi hotspot clients.
+# When the USB Wi-Fi dongle is connected, hostapd bridges it into br0.
+# ==============================================================================
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eth0:
+      dhcp4: false
+      dhcp6: false
+      link-local: []
+      optional: true
+      ignore-carrier: true
+  bridges:
+    br0:
+      interfaces: [eth0]
+      parameters:
+        stp: false
+        forward-delay: 0
+      dhcp4: false
+      dhcp6: false
+      link-local: []
+      optional: true
+      ignore-carrier: true
+      addresses:
+        - 10.42.0.1/24

@@ -14,21 +14,32 @@ rm linux-*.deb
 # - fwupd: I don't think we need to update devices firmware like a logitech mouse, and it also uses like 20MB of RAM...
 # - cryptsetup: don't need to setup disk encryption. Also, causes build failures on some host system configurations.
 # - mdadm: don't need to setup raid.
+# Detect and purge stock non-RT kernel packages and unneeded bloat
+STOCK_PKGS=$(dpkg -l | grep -E "linux-(image|modules)-[0-9]" | grep -v "rt" | awk '{print $2}' || true)
 apt-get purge --autoremove -y \
   cryptsetup \
   fwupd \
   linux-image-raspi \
-  linux-modules-${STOCK_LINUX_VERSION}-raspi \
-  linux-image-${STOCK_LINUX_VERSION}-raspi \
+  $STOCK_PKGS \
   mdadm \
   snapd \
   btrfs-progs \
-  xfsprogs
+  xfsprogs \
+  || true
 
 # TODO: Even tho
 # https://github.com/ros-realtime/linux-real-time-kernel-builder/pull/32 is
 # merged, this is still needed somehow... I suspect that flash-kernel is no
 # longer being called due to some changes upstream? Not sure.
+# Detect installed RT kernel version if different from default
+if [ ! -f "/boot/vmlinuz-${LINUX_RT_VERSION}-raspi" ]; then
+  DETECTED_RT_VMLINUZ=$(ls -t /boot/vmlinuz-*-raspi 2>/dev/null | grep -v "${STOCK_LINUX_VERSION}" | head -n 1)
+  if [ -n "$DETECTED_RT_VMLINUZ" ]; then
+    LINUX_RT_VERSION=$(basename "$DETECTED_RT_VMLINUZ" | sed 's/vmlinuz-//' | sed 's/-raspi//')
+    echo "Detected installed RT kernel version: ${LINUX_RT_VERSION}"
+  fi
+fi
+
 ln -s -f /boot/vmlinuz-${LINUX_RT_VERSION}-raspi /boot/vmlinuz
 ln -s -f /boot/initrd.img-${LINUX_RT_VERSION}-raspi /boot/initrd.img
 

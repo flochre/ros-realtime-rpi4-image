@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// Overlay for STMicroelectronics LSM6DSx IMU on SPI0
+// Pinout: GPIO11 (SCLK), GPIO10 (MOSI), GPIO9 (MISO), GPIO8 (CE0, default) or GPIO7 (CE1)
+
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2835";
+
+	spidev_fragment: fragment@0 {
+		target = <&spidev0>;
+		__overlay__ {
+			status = "disabled";
+		};
+	};
+
+	lsm6dsx_fragment: fragment@1 {
+		target = <&spi0>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+
+			lsm6ds: lsm6ds@0 {
+				compatible = "st,lsm6ds3tr-c";
+				reg = <0>;
+				spi-max-frequency = <10000000>;
+				status = "okay";
+			};
+		};
+	};
+
+	int_fragment: fragment@2 {
+		target = <&gpio>;
+		__dormant__ {
+			lsm6ds_pins: lsm6ds_pins {
+				brcm,pins = <25>;
+				brcm,function = <0>; /* in */
+				brcm,pull = <0>; /* none */
+			};
+		};
+	};
+
+	__overrides__ {
+		spi0-0 = <&lsm6dsx_fragment>, "target:0=", <&spi0>,
+		         <&spidev_fragment>, "target:0=", <&spidev0>,
+		         <&lsm6ds>, "reg:0=0";
+		spi0-1 = <&lsm6dsx_fragment>, "target:0=", <&spi0>,
+		         <&spidev_fragment>, "target:0=", <&spidev1>,
+		         <&lsm6ds>, "reg:0=1";
+		cs0 = <&spidev_fragment>, "target:0=", <&spidev0>,
+		      <&lsm6ds>, "reg:0=0";
+		cs1 = <&spidev_fragment>, "target:0=", <&spidev1>,
+		      <&lsm6ds>, "reg:0=1";
+		speed = <&lsm6ds>, "spi-max-frequency:0";
+
+		/* Chip model selection */
+		lsm6ds3tr-c = <&lsm6ds>, "compatible=st,lsm6ds3tr-c";
+		lsm6ds3tr_c = <&lsm6ds>, "compatible=st,lsm6ds3tr-c";
+		lsm6ds3trc  = <&lsm6ds>, "compatible=st,lsm6ds3tr-c";
+		lsm6ds3     = <&lsm6ds>, "compatible=st,lsm6ds3";
+		lsm6ds3h    = <&lsm6ds>, "compatible=st,lsm6ds3h";
+		lsm6dsl     = <&lsm6ds>, "compatible=st,lsm6dsl";
+		lsm6dsm     = <&lsm6ds>, "compatible=st,lsm6dsm";
+		ism330dlc   = <&lsm6ds>, "compatible=st,ism330dlc";
+		lsm6dso     = <&lsm6ds>, "compatible=st,lsm6dso";
+		lsm6dsox    = <&lsm6ds>, "compatible=st,lsm6dsox";
+		lsm6dsr     = <&lsm6ds>, "compatible=st,lsm6dsr";
+		ism330dhcx  = <&lsm6ds>, "compatible=st,ism330dhcx";
+		lsm6dst     = <&lsm6ds>, "compatible=st,lsm6dst";
+		lsm6dstx    = <&lsm6ds>, "compatible=st,lsm6dstx";
+		lsm6dsv     = <&lsm6ds>, "compatible=st,lsm6dsv";
+		lsm6dsv16x  = <&lsm6ds>, "compatible=st,lsm6dsv16x";
+
+		/* Optional interrupt pin (GPIO) */
+		interrupt = <0>, "+2",
+		            <&lsm6ds_pins>, "brcm,pins:0",
+		            <&lsm6ds>, "interrupt-parent:0=", <&gpio>,
+		            <&lsm6ds>, "interrupts:0",
+		            <&lsm6ds>, "interrupts:4=2";
+	};
+};

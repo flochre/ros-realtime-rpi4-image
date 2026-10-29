@@ -1,4 +1,0 @@
-.PHONY: noble-rt-lsm6dsx
-
-noble-rt-lsm6dsx:
-	sudo ./ros-rt-img build noble-rt noble-rt-lsm6dsx

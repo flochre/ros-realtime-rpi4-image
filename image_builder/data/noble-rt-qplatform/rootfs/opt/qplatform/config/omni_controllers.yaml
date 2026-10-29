@@ -1,0 +1,57 @@
+# ==============================================================================
+# ros2_control Configuration for Omni Wheel Drive Robot (QPlatform)
+# ==============================================================================
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz (Real-time update frequency)
+
+    # Broadcasters
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    imu_sensor_broadcaster:
+      type: imu_sensor_broadcaster/IMUSensorBroadcaster
+
+    # Main Base Controller
+    omni_wheel_drive_controller:
+      type: omni_wheel_drive_controller/OmniWheelDriveController
+
+# ------------------------------------------------------------------------------
+# Omni Wheel Drive Controller Parameters
+# ------------------------------------------------------------------------------
+omni_wheel_drive_controller:
+  ros__parameters:
+    # Wheel joint names from robot_v2_recovered URDF (120 deg separation):
+    wheel_names:
+      - pivot_1
+      - pivot_2
+      - pivot_3
+
+    # Geometry & Kinematics (from URDF joint offsets)
+    wheel_offset: 0.0          # Angular offset (rad) of pivot_1 from +X axis
+    robot_radius: 0.1686       # Distance from robot center to wheel centers [m]
+    wheel_radius: 0.030        # Default wheel radius [m] (adjust based on physical omni wheel)
+
+    # Coordinate Frames & Odometry
+    odom_frame_id: "odom"
+    base_frame_id: "base_link"
+    enable_odom_tf: true       # Publish odom -> base_link TF (set false if fusing with EKF)
+    tf_frame_prefix: ""
+
+    # Feedback & Control
+    open_loop: false           # Set true if no wheel encoder feedback available
+    position_feedback: true    # Use position feedback (or false for velocity feedback)
+    cmd_vel_timeout: 0.5       # Timeout (seconds) to stop robot if cmd_vel stops
+
+    # Odometry covariance
+    diagonal_covariance:
+      pose: [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]
+      twist: [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]
+
+# ------------------------------------------------------------------------------
+# IMU Sensor Broadcaster (LSM6DS3TR-C IMU)
+# ------------------------------------------------------------------------------
+imu_sensor_broadcaster:
+  ros__parameters:
+    sensor_name: "lsm6dsx_imu"
+    frame_id: "imu_link"

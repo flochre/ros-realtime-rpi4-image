@@ -1,0 +1,33 @@
+[Unit]
+Description=QPlatform Wayland Kiosk Display (Cage + WebKit)
+After=systemd-user-sessions.service network-online.target seatd.service
+Wants=seatd.service network-online.target
+Conflicts=getty@tty7.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+SupplementaryGroups=video render input tty seat
+PAMName=login
+
+# Bind to virtual terminal tty7 for direct DRM/KMS & libinput access
+TTYPath=/dev/tty7
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+StandardInput=tty
+StandardOutput=journal
+StandardError=journal
+
+# Pin browser & compositor to CPU 0 with lower priority to protect PREEMPT_RT tasks
+CPUAffinity=0
+Nice=15
+
+EnvironmentFile=-/etc/default/qplatform-kiosk
+ExecStart=/opt/qplatform/scripts/start_kiosk.sh
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

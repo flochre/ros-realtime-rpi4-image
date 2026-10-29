@@ -1,0 +1,13 @@
+# 1. Allow group read/write to IIO character device nodes (/dev/iio:device*)
+SUBSYSTEM=="iio", KERNEL=="iio:device[0-9]*", GROUP="iio", MODE="0660"
+
+# 2. Allow group read/write to IIO device sysfs attributes (buffer, scan_elements, trigger, sampling_frequency)
+SUBSYSTEM=="iio", KERNEL=="iio:device[0-9]*", RUN+="/bin/sh -c 'chgrp -R iio /sys%p && chmod -R g+rw /sys%p'"
+
+# 3. Allow group read/write to IIO triggers (trigger_now, name)
+SUBSYSTEM=="iio", KERNEL=="trigger[0-9]*", RUN+="/bin/sh -c 'chgrp -R iio /sys%p && chmod -R g+rw /sys%p'"
+
+# 4. Allow group write to add/remove sysfs triggers
+#    Use the real device path (/sys%p = /sys/devices/iio_sysfs_trigger), not the
+#    /sys/bus/iio/devices symlink: chgrp -R does not follow command-line symlinks.
+SUBSYSTEM=="iio", KERNEL=="iio_sysfs_trigger", RUN+="/bin/sh -c 'chgrp iio /sys%p/add_trigger /sys%p/remove_trigger && chmod g+w /sys%p/add_trigger /sys%p/remove_trigger'"

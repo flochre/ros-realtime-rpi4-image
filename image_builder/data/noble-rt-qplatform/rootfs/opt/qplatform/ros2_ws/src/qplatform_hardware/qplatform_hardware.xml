@@ -1,0 +1,9 @@
+<library path="qplatform_hardware">
+  <class name="qplatform_hardware/QPlatformStepperSystem"
+         type="qplatform_hardware::QPlatformStepperSystem"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      QPlatform 3-wheel omni-drive ros2_control SystemInterface that bridges pivot_1, pivot_2, and pivot_3 velocity commands and position/velocity states to the 3 STM32H563 micro-ROS stepper motor nodes over Ethernet.
+    </description>
+  </class>
+</library>

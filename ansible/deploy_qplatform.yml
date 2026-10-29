@@ -1,0 +1,157 @@
+---
+# ==============================================================================
+# High-Speed QPlatform Incremental Live Deployment Playbook (Raspberry Pi CM4)
+# ==============================================================================
+# Optimized for speed (~2 seconds total):
+#   - gather_facts: false (no slow remote hardware discovery)
+#   - OpenSSH ControlMaster + pipelining + rsync delta transfers
+#   - Zero per-file loops; skips 27MB STL meshes unless -e sync_meshes=true
+#
+# Usage:
+#   ./scripts/deploy_to_pi.sh -k
+#   ./scripts/deploy_to_pi.sh -k --tags qplatform
+#   ./scripts/deploy_to_pi.sh -k -e sync_meshes=true
+#   ./scripts/deploy_to_pi.sh -k -e install_packages=true
+# ==============================================================================
+
+- name: Fast Deploy QPlatform Stack to Raspberry Pi CM4
+  hosts: "{{ target_hosts | default('qplatform_robots') }}"
+  gather_facts: false
+  become: false
+  vars:
+    repo_root: "{{ playbook_dir }}/.."
+    rootfs_dir: "{{ repo_root }}/image_builder/data/noble-rt-qplatform/rootfs"
+    pi_user: "{{ ansible_user | default('ubuntu') }}"
+    iio_rate_hz: 100
+    sync_meshes: false
+    install_packages: false
+
+  tasks:
+    # --------------------------------------------------------------------------
+    # 1. Local DTBO Build & Remote Directory / Group Preparation (Opens SSH Multiplex Socket)
+    # --------------------------------------------------------------------------
+    - name: Compile lsm6dsx-spi.dtbo locally on WSL2
+      ansible.builtin.command:
+        cmd: make -C "{{ repo_root }}" dtbo
+      delegate_to: localhost
+      run_once: true
+      changed_when: false
+      tags: [dtbo]
+
+    - name: Authorize local SSH public key and prepare remote directories/groups on Pi
+      ansible.builtin.raw: |
+        mkdir -p ~/.ssh && chmod 700 ~/.ssh
+        grep -qF "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}" ~/.ssh/authorized_keys 2>/dev/null || \
+          echo "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}" >> ~/.ssh/authorized_keys
+        chmod 600 ~/.ssh/authorized_keys
+        sudo mkdir -p /opt/qplatform /tmp/qplatform_stage && \
+        sudo chown -R {{ pi_user }}:{{ pi_user }} /opt/qplatform /tmp/qplatform_stage && \
+        sudo groupadd -f iio && sudo groupadd -f seat && \
+        sudo usermod -aG iio,video,render,input,tty,seat {{ pi_user }}
+      changed_when: false
+      tags: [always, ssh]
+
+    # --------------------------------------------------------------------------
+    # 2. Fast Rsync of /opt/qplatform (Configs, Launch, Scripts, WebUI, URDF)
+    # --------------------------------------------------------------------------
+    - name: Rsync /opt/qplatform (skips 27MB STL meshes unless -e sync_meshes=true)
+      ansible.posix.synchronize:
+        src: "{{ rootfs_dir }}/opt/qplatform/"
+        dest: /opt/qplatform/
+        archive: true
+        compress: true
+        use_ssh_args: true
+        rsync_opts: "{{ [] if (sync_meshes | bool) else ['--exclude=robot_v2_recovered/meshes/'] }}"
+      register: qplatform_sync
+      tags: [qplatform]
+
+    - name: Build qplatform_hardware ros2_control plugin in /opt/qplatform/ros2_ws
+      ansible.builtin.raw: |
+        chmod +x /opt/qplatform/scripts/*.sh /opt/qplatform/scripts/*.py 2>/dev/null || true
+        if [ ! -f /opt/qplatform/ros2_ws/install/qplatform_hardware/lib/libqplatform_hardware.so ] || \
+           [ /opt/qplatform/ros2_ws/src/qplatform_hardware/src/qplatform_stepper_system.cpp -nt /opt/qplatform/ros2_ws/install/qplatform_hardware/lib/libqplatform_hardware.so ] || \
+           [ /opt/qplatform/ros2_ws/src/qplatform_hardware/include/qplatform_hardware/qplatform_stepper_system.hpp -nt /opt/qplatform/ros2_ws/install/qplatform_hardware/lib/libqplatform_hardware.so ]; then
+          /opt/qplatform/scripts/build_qplatform_hardware.sh
+        fi
+      tags: [qplatform, hardware]
+
+    # --------------------------------------------------------------------------
+    # 3. Fast Rsync of System Files (DTBO, Patched Modules, udev, systemd)
+    # --------------------------------------------------------------------------
+    - name: Rsync DTBO, patched kernel modules, udev rules, and systemd services
+      ansible.posix.synchronize:
+        src: "{{ rootfs_dir }}/"
+        dest: /tmp/qplatform_stage/
+        archive: true
+        compress: true
+        use_ssh_args: true
+        rsync_opts:
+          - "--exclude=opt/"
+          - "--exclude=home/"
+      register: sys_stage
+      tags: [dtbo, modules, udev, services, kiosk, netplan]
+
+    - name: Apply staged DTBO, kernel modules, udev rules, services, and IIO trigger
+      ansible.builtin.raw: |
+        set -e
+        # 1. DTBO & config.txt
+        if [ -f /tmp/qplatform_stage/boot/firmware/overlays/lsm6dsx-spi.dtbo ]; then
+          sudo cp /tmp/qplatform_stage/boot/firmware/overlays/lsm6dsx-spi.dtbo /boot/firmware/overlays/lsm6dsx-spi.dtbo
+        fi
+        for line in "dtparam=i2c_arm=on" "dtparam=spi=on" "dtoverlay=lsm6dsx-spi" "dtoverlay=vc4-kms-v3d"; do
+          sudo grep -q "^${line}" /boot/firmware/config.txt || echo "${line}" | sudo tee -a /boot/firmware/config.txt >/dev/null
+        done
+
+        # 2. Patched kernel modules
+        if [ -d /tmp/qplatform_stage/lib/modules ]; then
+          sudo cp -r /tmp/qplatform_stage/lib/modules/* /lib/modules/
+          sudo depmod -a
+        fi
+
+        # 3. udev rules, systemd units & Netplan eth0 shared mode (10.42.0.1/24 + DHCP server)
+        sudo cp /tmp/qplatform_stage/etc/udev/rules.d/99-iio.rules /etc/udev/rules.d/99-iio.rules
+        sudo cp /tmp/qplatform_stage/etc/systemd/system/*.service /etc/systemd/system/
+        [ -f /etc/default/qplatform-kiosk ] || sudo cp /tmp/qplatform_stage/etc/default/qplatform-kiosk /etc/default/qplatform-kiosk
+
+        sudo mkdir -p /etc/netplan /etc/systemd/network/10-netplan-eth0.network.d /etc/sysctl.d
+        sudo cp /tmp/qplatform_stage/etc/netplan/60-eth0-shared.yaml /etc/netplan/60-eth0-shared.yaml
+        sudo chmod 0600 /etc/netplan/60-eth0-shared.yaml
+        sudo cp /tmp/qplatform_stage/etc/systemd/network/10-netplan-eth0.network.d/shared-dhcp.conf \
+                /etc/systemd/network/10-netplan-eth0.network.d/shared-dhcp.conf
+        sudo cp /tmp/qplatform_stage/etc/sysctl.d/99-eth0-shared.conf /etc/sysctl.d/99-eth0-shared.conf
+        sudo sysctl -p /etc/sysctl.d/99-eth0-shared.conf >/dev/null 2>&1 || true
+
+        # Apply netplan immediately if SSH is not currently running over eth0
+        if ! ip -4 addr show dev eth0 2>/dev/null | grep -q "{{ inventory_hostname }}"; then
+          sudo netplan apply
+        else
+          sudo netplan generate
+          echo "NOTE: SSH session is active on eth0 ({{ inventory_hostname }}). Netplan generated; run 'sudo netplan apply' or reboot to switch eth0 to 10.42.0.1/24."
+        fi
+
+        # 4. Permissions, reload & IIO trigger
+        sudo chmod +x /opt/qplatform/scripts/*.py /opt/qplatform/scripts/*.sh 2>/dev/null || true
+        sudo systemctl daemon-reload
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --subsystem-match=iio
+        sudo /opt/qplatform/scripts/setup_iio_trigger.sh {{ iio_rate_hz }}
+      changed_when: sys_stage.changed
+      tags: [dtbo, modules, udev, services, kiosk, netplan]
+
+    # --------------------------------------------------------------------------
+    # 4. Optional: Install APT Packages & Build micro-ROS Agent (-e install_packages=true)
+    # --------------------------------------------------------------------------
+    - name: Install ROS 2 Jazzy + Wayland Kiosk packages and build micro-ROS Agent
+      ansible.builtin.raw: |
+        sudo apt-get update && sudo apt-get install -y \
+          cage seatd python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 \
+          libegl-mesa0 libgl1-mesa-dri libgbm1 libinput-bin fonts-dejavu-core \
+          ros-jazzy-navigation2 ros-jazzy-nav2-bringup ros-jazzy-robot-localization \
+          ros-jazzy-ros2-control ros-jazzy-ros2-controllers ros-jazzy-ros2controlcli \
+          ros-jazzy-omni-wheel-drive-controller ros-jazzy-controller-manager \
+          ros-jazzy-joint-state-broadcaster ros-jazzy-imu-sensor-broadcaster \
+          ros-jazzy-micro-ros-msgs python3-colcon-common-extensions git cmake build-essential && \
+        sudo systemctl enable --now seatd.service qplatform-kiosk.service && \
+        sudo /opt/qplatform/scripts/build_micro_ros_agent.sh
+      when: install_packages | bool
+      tags: [packages]

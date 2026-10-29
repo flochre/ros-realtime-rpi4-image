@@ -1,0 +1,16 @@
+# ==============================================================================
+# QPlatform Wayland Kiosk Configuration (/etc/default/qplatform-kiosk)
+# ==============================================================================
+# After editing, apply changes with:
+#   sudo systemctl restart qplatform-kiosk
+# ==============================================================================
+
+# URL to display on boot (can be http://localhost:8080, https://..., or file://...)
+KIOSK_URL="file:///opt/qplatform/webui/index.html"
+
+# Browser backend inside cage: "auto" (prefers cog if installed, else WebKit2GTK),
+# "webkit" (built-in Python WebKit2GTK), or "chromium"
+KIOSK_BROWSER="auto"
+
+# Set to "1" to hide the mouse pointer on touchscreens
+KIOSK_HIDE_CURSOR="0"
